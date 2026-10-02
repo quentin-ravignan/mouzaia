@@ -91,7 +91,8 @@ section{padding-block:clamp(56px,9vw,104px)}
 @media (max-width:640px){.coach{grid-template-columns:1fr}.coach img{width:180px}}
 
 /* inscription */
-.slots{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.slots{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+@media (max-width:900px){.slots{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .slot{background:var(--night-2);border-radius:20px;padding:28px;border-top:8px solid var(--c);display:flex;flex-direction:column;gap:6px}
 .slot .day{font-family:var(--display);font-size:2rem;color:var(--c)}
 .slot .time{font-size:1.6rem;font-weight:700;font-variant-numeric:tabular-nums}
@@ -138,12 +139,31 @@ td.num.cy{color:var(--cyan)}
 .pop a{color:#0e7c8c;font-weight:700}
 @media (max-width:820px){.spots{grid-template-columns:1fr}.spot-map{height:380px}.spot-list{max-height:none}}
 
+/* riders */
+.crews{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.crew{background:var(--night-2);border-radius:20px;border-top:8px solid var(--c);padding:22px 22px 10px;min-width:0;overflow-x:auto}
+.crew-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:6px}
+.crew-head h3{font-family:var(--display);font-weight:400;font-size:1.6rem;color:var(--c)}
+.crew-head span{color:var(--muted);font-weight:700;font-size:.9rem;white-space:nowrap}
+.crew th,.crew td{padding:10px 8px}
+.crew td{font-variant-numeric:tabular-nums}
+.crew td:first-child{font-weight:700}
+.crew tr:last-child td{border-bottom:0}
+@media (max-width:760px){.crews{grid-template-columns:1fr}}
+
 /* spots / riders */
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}
 .empty{border:2px dashed var(--e);border-radius:20px;padding:28px;display:flex;flex-direction:column;gap:10px;min-width:0}
 .empty h3{color:var(--e2)}
 .cream .empty p{color:var(--muted-ink)} .night .empty p{color:var(--muted)}
 .pill{align-self:flex-start;font-size:.8rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:999px;background:var(--e);color:var(--night)}
+
+/* game */
+.game-wrap{position:relative;border-radius:22px;border:3px solid var(--ink);overflow:hidden;box-shadow:6px 6px 0 var(--pink-deep);background:var(--night);touch-action:manipulation;user-select:none;-webkit-user-select:none}
+.game-wrap canvas{display:block;width:100%;height:auto;cursor:pointer}
+.game-wrap canvas:focus-visible{outline:3px solid var(--yellow);outline-offset:-3px}
+.game-bar{display:flex;flex-wrap:wrap;gap:12px 24px;justify-content:space-between;align-items:center;margin-top:16px;color:var(--muted-ink)}
+.game-bar kbd{font:inherit;font-weight:700;background:#fff;border:1.5px solid var(--ink);border-bottom-width:3px;border-radius:8px;padding:1px 8px;color:var(--ink)}
 
 footer{background:var(--night);border-top:1px solid var(--line);padding-block:40px;color:var(--muted)}
 .foot{display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:center}
@@ -201,6 +221,7 @@ input[type=date]{color-scheme:dark}
       <li><a class="link" href="#inscription">Inscription</a></li>
       <li><a class="link" href="#spots">Spots</a></li>
       <li><a class="link" href="#riders">Riders</a></li>
+      <li><a class="link" href="#game">Game</a></li>
     </ul>
   </nav>
 </header>
@@ -268,8 +289,10 @@ input[type=date]{color-scheme:dark}
       <p class="lead">Les places sont limitées : 4 groupes de 6 élèves maximum.</p>
     </div>
     <div class="slots">
-      <div class="slot" style="--c:var(--cyan)"><span class="day">Lundi</span><span class="time">16h30 – 18h</span><span class="note">2 groupes de 6 max</span></div>
-      <div class="slot" style="--c:var(--pink)"><span class="day">Mardi</span><span class="time">16h30 – 18h</span><span class="note">2 groupes de 6 max</span></div>
+      <div class="slot" style="--c:var(--cyan)"><span class="day">Lundi</span><span class="time">16h30</span><span class="note">AlleyOop · 6 max</span></div>
+      <div class="slot" style="--c:var(--pink)"><span class="day">Lundi</span><span class="time">18h00</span><span class="note">Benihana · 6 max</span></div>
+      <div class="slot" style="--c:var(--yellow)"><span class="day">Mardi</span><span class="time">16h30</span><span class="note">Caballerial · 6 max</span></div>
+      <div class="slot" style="--c:#7aa8ff"><span class="day">Mardi</span><span class="time">18h00</span><span class="note">Disaster · 6 max</span></div>
     </div>
     <div class="facts">
       <div class="fact"><b>1 h</b><span>de cours par semaine</span></div>
@@ -334,7 +357,7 @@ input[type=date]{color-scheme:dark}
       <fieldset><legend>Cours &amp; formule</legend>
         <div class="row2">
           <div class="field"><label for="f-creneau">Créneau</label>
-            <select id="f-creneau" name="creneau"><option value="">Choisir un créneau</option><option>Lundi · 16h30 – 18h</option><option>Mardi · 16h30 – 18h</option></select></div>
+            <select id="f-creneau" name="creneau"><option value="">Choisir un créneau</option><option>AlleyOop (Lundi 16h30)</option><option>Benihana (Lundi 18h00)</option><option>Caballerial (Mardi 16h30)</option><option>Disaster (Mardi 18h00)</option></select></div>
           <div class="field"><label for="f-formule">Formule <span class="req">*</span></label>
             <select id="f-formule" name="formule" required><option value="">Choisir selon ton QF</option><option>QF T1 à T4 · 390 €</option><option>QF T5 à T7 · 450 €</option><option>QF T8 à T10 · 490 €</option><option>Adhésion seule · 20 €</option></select></div>
         </div>
@@ -404,8 +427,60 @@ input[type=date]{color-scheme:dark}
       <h2>Le crew</h2>
       <p class="lead">Les riders du Mouzaïa Skate Club.</p>
     </div>
-    <div class="grid">
-      <div class="empty" style="--e:var(--pink);--e2:var(--pink)"><span class="pill">À venir</span><h3>Les riders arrivent</h3><p>Prénom, groupe et niveau, repris de l'appli du club.</p></div>
+    <div class="crews">
+      <div class="crew" style="--c:var(--cyan)">
+        <div class="crew-head"><h3>AlleyOop</h3><span>Lundi · 16h30</span></div>
+        <table><thead><tr><th>Rider</th><th>Âge</th><th>Stance</th></tr></thead><tbody>
+          <tr><td>Virgile A.</td><td>7 ans</td><td>?</td></tr>
+          <tr><td>Georgia A.</td><td>5 ans</td><td>?</td></tr>
+          <tr><td>Joseph B.</td><td>9 ans</td><td>?</td></tr>
+          <tr><td>Joseph E.</td><td>5 ans</td><td>Regular</td></tr>
+        </tbody></table>
+      </div>
+      <div class="crew" style="--c:var(--pink)">
+        <div class="crew-head"><h3>Benihana</h3><span>Lundi · 18h00</span></div>
+        <table><thead><tr><th>Rider</th><th>Âge</th><th>Stance</th></tr></thead><tbody>
+          <tr><td>Mathis H.</td><td>8 ans</td><td>Regular</td></tr>
+          <tr><td>Salomé H.</td><td>6 ans</td><td>Goofy</td></tr>
+          <tr><td>Abigaëlle H.</td><td>4 ans</td><td>Regular</td></tr>
+        </tbody></table>
+      </div>
+      <div class="crew" style="--c:var(--yellow)">
+        <div class="crew-head"><h3>Caballerial</h3><span>Mardi · 16h30</span></div>
+        <table><thead><tr><th>Rider</th><th>Âge</th><th>Stance</th></tr></thead><tbody>
+          <tr><td>Jim L.</td><td>8 ans</td><td>?</td></tr>
+          <tr><td>Leo F.</td><td>8 ans</td><td>Regular</td></tr>
+          <tr><td>Léonie R.</td><td>7 ans</td><td>Regular</td></tr>
+          <tr><td>Mona R.</td><td>5 ans</td><td>Regular</td></tr>
+          <tr><td>Victoire B.</td><td>8 ans</td><td>Regular</td></tr>
+          <tr><td>Timothée H.</td><td>8 ans</td><td>Regular</td></tr>
+        </tbody></table>
+      </div>
+      <div class="crew" style="--c:#7aa8ff">
+        <div class="crew-head"><h3>Disaster</h3><span>Mardi · 18h00</span></div>
+        <table><thead><tr><th>Rider</th><th>Âge</th><th>Stance</th></tr></thead><tbody>
+          <tr><td>Salif S.</td><td>4 ans</td><td>Regular</td></tr>
+          <tr><td>Ismaël S.</td><td>10 ans</td><td>Regular</td></tr>
+          <tr><td>Achille D.</td><td>5 ans</td><td>Regular</td></tr>
+          <tr><td>Noémie M.</td><td>4 ans</td><td>?</td></tr>
+        </tbody></table>
+      </div>
+    </div>
+  </div>
+</section>
+<section id="game" class="cream">
+  <div class="wrap">
+    <div class="head">
+      <p class="eyebrow">Game</p>
+      <h2>Skate Cat Run</h2>
+      <p class="lead">Aide le chat du club à sauter par-dessus les obstacles. Plus tu tiens, plus ça va vite !</p>
+    </div>
+    <div class="game-wrap">
+      <canvas id="game-canvas" width="900" height="300" tabindex="0" aria-label="Mini-jeu de skate : appuie sur Espace ou touche l'écran pour sauter"></canvas>
+    </div>
+    <div class="game-bar">
+      <p><kbd>Espace</kbd> ou <kbd>↑</kbd> pour sauter · sur mobile, touche le jeu</p>
+      <p>Record : <b id="game-best">0</b></p>
     </div>
   </div>
 </section>
@@ -532,6 +607,117 @@ input[type=date]{color-scheme:dark}
     markers.push(m);
   });
   if(map)map.fitBounds(L.latLngBounds(SPOTS.map(function(s){return s.ll})),{padding:[30,30]});
+})();
+</script>
+
+<script>
+(function(){
+  var cv=document.getElementById('game-canvas'),ctx=cv.getContext('2d'),bestEl=document.getElementById('game-best');
+  var H=300,W=cv.parentNode.clientWidth<640?560:900,GROUND=250,PX=W<900?60:110;cv.height=H;cv.width=W;cv.style.aspectRatio=W+'/'+H;
+  var C={night:'#150d2e',night2:'#1f1442',cyan:'#3ddcf0',pink:'#ff4fa8',yellow:'#ffe14d',cream:'#fbf4e6',orange:'#f39a2b',orange2:'#c96f12',green:'#2fae5f'};
+  var dpr=Math.min(window.devicePixelRatio||1,2);cv.width=W*dpr;cv.height=H*dpr;ctx.scale(dpr,dpr);
+  var best=0;try{best=+localStorage.getItem('msc-best')||0}catch(e){}bestEl.textContent=best;
+  var state='ready',score=0,speed=380,t=0,last=0,obs=[],nextGap=500,flash=0;
+  var cat={y:0,vy:0,air:false,rot:0};
+  // decor
+  var stars=[];for(var i=0;i<50;i++)stars.push({x:Math.random()*W,y:Math.random()*140,r:Math.random()*1.4+.4});
+  function skyline(n,minH,maxH){var a=[],x=0;while(x<W*2){var w=40+Math.random()*70;a.push({x:x,w:w,h:minH+Math.random()*(maxH-minH),win:Math.random()<.6});x+=w+Math.random()*10}return{b:a,len:x}}
+  var far=skyline(0,40,110),near=skyline(0,30,80),farX=0,nearX=0,groundX=0;
+  var TYPES=[
+    {k:'cone',w:24,h:36},{k:'cone2',w:52,h:36},{k:'barrier',w:48,h:32},{k:'box',w:74,h:40},{k:'rail',w:96,h:30}
+  ];
+  function reset(){score=0;speed=380;obs=[];nextGap=420;cat.y=0;cat.vy=0;cat.air=false;cat.rot=0}
+  function jump(){
+    if(state==='ready'){state='run';reset();return}
+    if(state==='over'){if(t-flash>.4){state='run';reset()}return}
+    if(!cat.air){cat.vy=860;cat.air=true}
+  }
+  // input: keys only while game section is on screen
+  var visible=false;new IntersectionObserver(function(e){visible=e[0].isIntersecting;if(!visible&&state==='run')state='paused'},{threshold:.5}).observe(cv);
+  window.addEventListener('keydown',function(e){
+    if(!visible)return;
+    if(e.code==='Space'||e.code==='ArrowUp'||e.key===' '){
+      var tag=(document.activeElement&&document.activeElement.tagName)||'';if(/INPUT|TEXTAREA|SELECT|BUTTON/.test(tag)&&document.activeElement!==cv)return;
+      e.preventDefault();if(state==='paused'){state='run';return}jump();
+    }
+  });
+  cv.addEventListener('pointerdown',function(e){e.preventDefault();cv.focus({preventScroll:true});if(state==='paused'){state='run';return}jump()});
+
+  function spawn(){var ty=TYPES[Math.floor(Math.random()*(score<300?3:TYPES.length))];obs.push({x:W+20,w:ty.w,h:ty.h,k:ty.k})}
+  function update(dt){
+    if(state!=='run')return;
+    speed=Math.min(380+score*0.9,920);score+=dt*10*(speed/380);
+    var dx=speed*dt;
+    farX=(farX+dx*.15)%far.len;nearX=(nearX+dx*.4)%near.len;groundX=(groundX+dx)%40;
+    if(cat.air){cat.vy-=2700*dt;cat.y+=cat.vy*dt;cat.rot=Math.max(-.35,Math.min(.25,-cat.vy/2400));if(cat.y<=0){cat.y=0;cat.vy=0;cat.air=false;cat.rot=0}}
+    obs.forEach(function(o){o.x-=dx});obs=obs.filter(function(o){return o.x+o.w>-20});
+    nextGap-=dx;if(nextGap<=0){spawn();nextGap=speed*(.62+Math.random()*.7)+90}
+    // collision (forgiving hitboxes)
+    var px=PX+10,pw=44,py=GROUND-cat.y-58,ph=52;
+    for(var i=0;i<obs.length;i++){var o=obs[i];
+      if(px<o.x+o.w-6&&px+pw>o.x+6&&py+ph>GROUND-o.h+6){state='over';flash=t;var s=Math.floor(score);if(s>best){best=s;bestEl.textContent=best;try{localStorage.setItem('msc-best',best)}catch(e){}}break}
+    }
+  }
+  function rr(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath()}
+  function drawCat(x,y,rot,spin){
+    ctx.save();ctx.translate(x+32,y);ctx.rotate(rot);ctx.translate(-32,0);
+    // board
+    ctx.fillStyle=C.pink;rr(0,-17,66,7,4);ctx.fill();
+    ctx.fillStyle=C.yellow;[[12,-6],[54,-6]].forEach(function(p){ctx.beginPath();ctx.arc(p[0],p[1],5,0,7);ctx.fill();ctx.strokeStyle=C.night;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(p[0],p[1]);ctx.lineTo(p[0]+Math.cos(spin)*4,p[1]+Math.sin(spin)*4);ctx.stroke()});
+    // tail
+    ctx.strokeStyle=C.orange;ctx.lineWidth=6;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(14,-36);ctx.quadraticCurveTo(-6,-40,-2,-60+Math.sin(spin*.5)*3);ctx.stroke();
+    // legs
+    ctx.strokeStyle=C.orange2;ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(22,-30);ctx.lineTo(18,-18);ctx.moveTo(42,-30);ctx.lineTo(46,-18);ctx.stroke();
+    // body + hoodie
+    ctx.fillStyle=C.cyan;rr(14,-56,36,28,12);ctx.fill();
+    ctx.fillStyle=C.orange;ctx.beginPath();ctx.ellipse(52,-46,6,5,0,0,7);ctx.fill();
+    // head
+    ctx.fillStyle=C.orange;ctx.beginPath();ctx.arc(36,-70,17,0,7);ctx.fill();
+    ctx.beginPath();ctx.moveTo(22,-78);ctx.lineTo(24,-94);ctx.lineTo(34,-84);ctx.fill();
+    ctx.beginPath();ctx.moveTo(40,-85);ctx.lineTo(50,-94);ctx.lineTo(51,-77);ctx.fill();
+    // stripes
+    ctx.strokeStyle=C.orange2;ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(30,-86);ctx.lineTo(31,-80);ctx.moveTo(36,-87);ctx.lineTo(36,-81);ctx.stroke();
+    // cap
+    ctx.fillStyle=C.green;ctx.beginPath();ctx.arc(36,-80,15,Math.PI,0);ctx.fill();rr(36,-82,26,5,2);ctx.fill();
+    // sunglasses
+    ctx.fillStyle=C.night;rr(28,-75,11,7,2);ctx.fill();rr(41,-75,11,7,2);ctx.fill();ctx.fillRect(38,-73,4,2);
+    ctx.fillStyle=C.cyan;ctx.fillRect(30,-74,3,2);ctx.fillRect(43,-74,3,2);
+    // muzzle + smile
+    ctx.fillStyle=C.cream;ctx.beginPath();ctx.ellipse(44,-62,7,5,0,0,7);ctx.fill();
+    ctx.fillStyle=C.pink;ctx.beginPath();ctx.arc(46,-65,2,0,7);ctx.fill();
+    ctx.restore();
+  }
+  function drawObs(o){
+    var x=o.x,y=GROUND;
+    if(o.k==='cone'||o.k==='cone2'){var n=o.k==='cone2'?2:1;for(var i=0;i<n;i++){var cx=x+i*28;ctx.fillStyle='#ff7a1a';ctx.beginPath();ctx.moveTo(cx+12,y-o.h);ctx.lineTo(cx+22,y-4);ctx.lineTo(cx+2,y-4);ctx.fill();ctx.fillStyle=C.cream;ctx.fillRect(cx+7,y-22,10,5);ctx.fillStyle='#ff7a1a';rr(cx,y-5,24,5,2);ctx.fill()}}
+    else if(o.k==='barrier'){ctx.fillStyle=C.cream;ctx.fillRect(x+4,y-o.h,6,o.h);ctx.fillRect(x+o.w-10,y-o.h,6,o.h);ctx.fillStyle=C.pink;rr(x,y-o.h,o.w,12,3);ctx.fill();ctx.fillStyle=C.cream;for(var s=6;s<o.w;s+=14)ctx.fillRect(x+s,y-o.h,6,12)}
+    else if(o.k==='box'){ctx.fillStyle='#5b4b8a';rr(x,y-o.h,o.w,o.h,4);ctx.fill();ctx.fillStyle=C.cyan;ctx.fillRect(x,y-o.h,o.w,4);ctx.fillStyle='rgba(255,255,255,.15)';ctx.font='700 11px Space Grotesk, sans-serif';ctx.fillText('MSC',x+24,y-14)}
+    else if(o.k==='rail'){ctx.fillStyle=C.yellow;ctx.fillRect(x,y-o.h,o.w,5);ctx.fillRect(x+6,y-o.h,5,o.h);ctx.fillRect(x+o.w-11,y-o.h,5,o.h)}
+  }
+  function draw(){
+    var g=ctx.createLinearGradient(0,0,0,GROUND);g.addColorStop(0,C.night);g.addColorStop(1,'#3a1d5c');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+    ctx.fillStyle='rgba(251,244,230,.7)';stars.forEach(function(s){ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,7);ctx.fill()});
+    ctx.fillStyle='rgba(255,79,168,.18)';ctx.beginPath();ctx.arc(W-140,90,46,0,7);ctx.fill();
+    function city(l,off,col,base){ctx.fillStyle=col;for(var r=0;r<2;r++)l.b.forEach(function(b){var x=b.x-off+r*l.len;if(x>W||x+b.w<0)return;ctx.fillRect(x,base-b.h,b.w,b.h);if(b.win){ctx.fillStyle='rgba(255,225,77,.35)';for(var wy=base-b.h+8;wy<base-10;wy+=14)for(var wx=x+6;wx<x+b.w-8;wx+=12)if((wx*7+wy*3)%5<2)ctx.fillRect(wx,wy,4,6);ctx.fillStyle=col}})}
+    city(far,farX,'#241650',GROUND);city(near,nearX,'#2d1b5e',GROUND);
+    ctx.fillStyle=C.night2;ctx.fillRect(0,GROUND,W,H-GROUND);
+    ctx.fillStyle=C.cyan;ctx.fillRect(0,GROUND,W,3);
+    ctx.fillStyle='rgba(61,220,240,.35)';for(var x=-groundX;x<W;x+=40)ctx.fillRect(x,GROUND+20,18,3);
+    obs.forEach(drawObs);
+    // shadow
+    ctx.fillStyle='rgba(0,0,0,.35)';var sw=50-Math.min(cat.y,120)/4;ctx.beginPath();ctx.ellipse(PX+33,GROUND+3,sw/2,4,0,0,7);ctx.fill();
+    drawCat(PX,GROUND-cat.y,cat.rot,t*speed/40);
+    ctx.fillStyle=C.cream;ctx.font='24px Bungee, Impact, sans-serif';ctx.textAlign='right';ctx.fillText(String(Math.floor(score)).padStart(5,'0'),W-20,38);
+    ctx.font='14px Bungee, Impact, sans-serif';ctx.fillStyle=C.cyan;ctx.fillText('REC '+String(best).padStart(5,'0'),W-20,58);ctx.textAlign='left';
+    if(state!=='run'){
+      ctx.fillStyle='rgba(21,13,46,.55)';ctx.fillRect(0,0,W,H);ctx.textAlign='center';
+      var title=state==='over'?'AÏE ! GAME OVER':state==='paused'?'PAUSE':'SKATE CAT RUN',sub=state==='over'?'Score : '+Math.floor(score)+' · Espace ou tape pour rejouer':state==='paused'?'Espace ou tape pour reprendre':'Espace ou tape pour rouler';
+      ctx.fillStyle=state==='over'?C.pink:C.yellow;ctx.font='38px Bungee, Impact, sans-serif';ctx.fillText(title,W/2,120);
+      ctx.fillStyle=C.cream;ctx.font='700 18px Space Grotesk, sans-serif';ctx.fillText(sub,W/2,156);ctx.textAlign='left';
+    }
+  }
+  function loop(now){var dt=Math.min((now-(last||now))/1000,1/30);last=now;t+=dt;update(dt);draw();requestAnimationFrame(loop)}
+  requestAnimationFrame(loop);
 })();
 </script>
 
