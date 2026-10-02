@@ -633,10 +633,10 @@ input[type=date]{color-scheme:dark}
   var C={night:'#150d2e',night2:'#1f1442',cyan:'#3ddcf0',pink:'#ff4fa8',yellow:'#ffe14d',cream:'#fbf4e6',sil:'#2a1858',sil2:'#33206a',win:'rgba(255,225,77,.45)'};
   var SK='#fde4d4';
   var CHARS=[
-    {name:'Léonie',girl:1,hair:'#f7d460',hair2:'#d9a92e',top:'#ff4fa8',pants:'#3b5ba8',style:'long',size:1},
-    {name:'Mona',girl:1,hair:'#e2561f',hair2:'#b23c0f',top:'#3ddcf0',pants:'#3b5ba8',style:'pigtails',size:1},
-    {name:'Léo',hair:'#f2cf5b',hair2:'#c49a2c',top:'#9b6dff',pants:'#2f3f6e',style:'curly',glasses:1,size:1.12},
-    {name:'Achille',hair:'#f6da6a',hair2:'#d1aa3a',top:'#3fd17a',pants:'#3b5ba8',style:'messy',size:.88}
+    {name:'Léonie',age:8,stance:'Regular',girl:1,hair:'#f7d460',hair2:'#d9a92e',top:'#ff4fa8',pants:'#3b5ba8',style:'long',size:1},
+    {name:'Mona',age:5,stance:'Regular',girl:1,hair:'#e2561f',hair2:'#b23c0f',top:'#3ddcf0',pants:'#3b5ba8',style:'pigtails',size:1},
+    {name:'Léo',age:8,stance:'Regular',hair:'#f2cf5b',hair2:'#c49a2c',top:'#9b6dff',pants:'#2f3f6e',style:'curly',glasses:1,size:1.12},
+    {name:'Achille',age:5,stance:'Regular',hair:'#f6da6a',hair2:'#d1aa3a',top:'#3fd17a',pants:'#3b5ba8',style:'messy',size:.88}
   ];
   var TR={ollie:{n:'Ollie',p:1,d:0},shove:{n:'Shove-it',p:3,d:.34},flip:{n:'Flip',p:5,d:.36},tre:{n:'3-6 Flip',p:10,d:.5}};
   var ZONES=['La Mouzaïa','Place des Fêtes','Jourdain','Belleville','Buttes-Chaumont','Canal Saint-Martin','La Villette'];
@@ -913,7 +913,8 @@ input[type=date]{color-scheme:dark}
     CHARS.forEach(function(c,i){var k=card(i),on=i===sel||i===hover;
       ctx.fillStyle=on?'rgba(61,220,240,.14)':'rgba(31,20,66,.85)';rr(k.x,58,k.w,206,16);ctx.fill();ctx.strokeStyle=i===sel?C.yellow:(on?C.cyan:'#3a2d66');ctx.lineWidth=3;rr(k.x,58,k.w,206,16);ctx.stroke();
       drawRider(c,k.x+k.w/2-33*sc*c.size,224,0,null,0,sc);
-      ctx.fillStyle=c.top;ctx.font=(W<900?'17px':'24px')+' Bungee, Impact, sans-serif';ctx.fillText(c.name,k.x+k.w/2,252)});
+      ctx.fillStyle=c.top;ctx.font=(W<900?'17px':'24px')+' Bungee, Impact, sans-serif';ctx.fillText(c.name,k.x+k.w/2,245);
+      ctx.fillStyle=C.cream;ctx.font='700 12px Space Grotesk, sans-serif';ctx.fillText(c.age+' ans · '+c.stance,k.x+k.w/2,260)});
     ctx.fillStyle=C.cream;ctx.font='700 13px Space Grotesk, sans-serif';ctx.fillText('← → puis Espace · ou touche une carte',W/2,285);ctx.textAlign='left';
   }
   function draw(){
