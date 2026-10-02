@@ -7,6 +7,7 @@
 <title>Mouzaïa Skate Club</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Space+Grotesk:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <style>
 /* Layout: one long night-time skate session — sticky neon nav, sections alternate deep night / cream, each opens with a tracking label + Bungee title */
 :root{
@@ -112,6 +113,30 @@ td.num.cy{color:var(--cyan)}
 .join small{font-size:.9rem}
 @media (max-width:900px){.facts{grid-template-columns:repeat(2,minmax(0,1fr))}.price-wrap{grid-template-columns:1fr}}
 @media (max-width:520px){.slots{grid-template-columns:1fr}}
+
+/* spots map */
+:root{--lv-green:#22a565;--lv-orange:#f08a00;--lv-red:#e0313a}
+.spots{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:20px;align-items:start}
+.spot-map-wrap{display:flex;flex-direction:column;gap:10px;min-width:0}
+.spot-map{position:relative;z-index:0;height:520px;border-radius:20px;border:3px solid var(--ink);overflow:hidden;background:#e8e2d4}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:.9rem;color:var(--muted-ink)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:12px;height:12px;border-radius:50%;background:var(--l);border:2px solid #fff;box-shadow:0 0 0 1px var(--ink)}
+.spot-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px;max-height:560px;overflow-y:auto;padding-right:4px}
+.spot-item{width:100%;text-align:left;font:inherit;color:var(--ink);background:#fff;border:1.5px solid #e6dcc6;border-left:8px solid var(--l);border-radius:14px;padding:12px 14px;cursor:pointer;display:flex;flex-direction:column;gap:4px}
+.spot-item:hover{border-color:var(--ink);border-left-color:var(--l)}
+.spot-item.on{border-color:var(--ink);border-left-color:var(--l);box-shadow:4px 4px 0 var(--ink)}
+.spot-item b{font-size:1.02rem}
+.spot-item span{font-size:.88rem;color:var(--muted-ink)}
+.lvl{align-self:flex-start;font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:2px 8px;border-radius:999px;background:var(--l);color:#fff}
+.pin{width:22px;height:22px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:var(--l);border:3px solid #fff;box-shadow:0 0 0 2px var(--ink)}
+.leaflet-popup-content{font-family:var(--body);margin:14px 16px;min-width:200px}
+.pop{display:flex;flex-direction:column;gap:6px;color:var(--ink)}
+.pop h4{margin:0;font-family:var(--display);font-weight:400;font-size:1.1rem;line-height:1.1}
+.pop p{margin:0;font-size:.9rem}
+.pop .addr{color:var(--muted-ink)}
+.pop a{color:#0e7c8c;font-weight:700}
+@media (max-width:820px){.spots{grid-template-columns:1fr}.spot-map{height:380px}.spot-list{max-height:none}}
 
 /* spots / riders */
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}
@@ -358,8 +383,16 @@ input[type=date]{color-scheme:dark}
       <h2>Où on roule</h2>
       <p class="lead">Les cours ont lieu en plein air, sur les spots autour de la Mouzaïa.</p>
     </div>
-    <div class="grid">
-      <div class="empty" style="--e:var(--cyan);--e2:#0e7c8c"><span class="pill">À venir</span><h3>La liste des spots arrive</h3><p>Nom, adresse et type de spot, repris de l'appli du club.</p></div>
+    <div class="spots">
+      <div class="spot-map-wrap">
+        <div id="spot-map" class="spot-map" role="region" aria-label="Carte des spots"></div>
+        <div class="legend" aria-label="Légende des niveaux">
+          <span><i style="--l:var(--lv-green)"></i>Green · facile</span>
+          <span><i style="--l:var(--lv-orange)"></i>Orange · intermédiaire</span>
+          <span><i style="--l:var(--lv-red)"></i>Red · confirmé</span>
+        </div>
+      </div>
+      <ul class="spot-list" id="spot-list"></ul>
     </div>
   </div>
 </section>
@@ -447,6 +480,58 @@ input[type=date]{color-scheme:dark}
     var a=document.createElement('a');a.href='https://cutt.ly/MOUZAIA';a.textContent='Ouvrir l\'appli du club';
     done.appendChild(h);done.appendChild(p);done.appendChild(a);done.hidden=false;
   });
+})();
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+(function(){
+  var SPOTS=[
+    {n:"Court du 7ème art",a:"Court du 7ème art, 75019 Paris",ll:[48.878103,2.387391],l:"Green",d:""},
+    {n:"Rue Francis Ponge",a:"Rue Francis Ponge, 75019 Paris",ll:[48.882194,2.394582],l:"Green",d:""},
+    {n:"Roller parc du square de la Porte d'Aubervilliers",a:"2 avenue de la Porte d'Aubervilliers, 75019 Paris",ll:[48.8984,2.3731],l:"Green",d:"Skatepark équipé de deux modules pour la pratique du roller et du skateboard."},
+    {n:"Square Claude Bernard",a:"176 boulevard Macdonald, 75019 Paris",ll:[48.8953,2.3779],l:"Red",d:"Roller park dans un cadre verdoyant, avec une barre de slide, un saut et un double saut."},
+    {n:"Ourcq",a:"Près du commissariat, 43 rue de l'Ourcq, 75019 Paris",ll:[48.8856,2.3813],l:"Red",d:"Surnommé « La Mecque du curb à Paris », ce spot est réputé pour ses cinq curbs en marbre."},
+    {n:"Roller parc de la Villette",a:"151 boulevard de la Villette, 75019 Paris",ll:[48.8810,2.3686],l:"Green",d:"Un espace pour la pratique du roller et du skateboard, à proximité des métros Stalingrad et Jaurès."},
+    {n:"Skatepark des Fougères",a:"Rue des Fougères, 75020 Paris",ll:[48.8695,2.4085],l:"Orange",d:"Skatepark en béton en extérieur avec un grand bowl et une zone de street."},
+    {n:"EGP 18 (Espace de Glisse Parisien 18)",a:"54 boulevard Ney, 75018 Paris",ll:[48.8986,2.3551],l:"Red",d:"L'un des plus grands skateparks couverts de France, avec une immense aire de street, un grand bowl et une partie extérieure."},
+    {n:"Skatepark Quai de Jemmapes",a:"142 quai de Jemmapes, 75010 Paris",ll:[48.8753,2.3662],l:"Red",d:"Situé le long du canal Saint-Martin, c'est un skatepark en béton très populaire avec des modules variés pour tous les niveaux."},
+    {n:"Pumptrack de l'Ourcq (Pantin)",a:"Quai de l'Ourcq, 93500 Pantin",ll:[48.8938,2.3957],l:"Orange",d:"Un grand pumptrack récent en enrobé, avec plusieurs boucles et virages relevés, situé juste au bord du canal de l'Ourcq."},
+    {n:"Skatepark de Pantin",a:"Quai de l'Aisne, 93500 Pantin",ll:[48.8943,2.3965],l:"Orange",d:"Juste à côté du pumptrack, ce skatepark en béton offre une aire de street avec des rails, curbs et des plans inclinés."}
+  ];
+  var LV={Green:{c:"var(--lv-green)",t:"Green · facile"},Orange:{c:"var(--lv-orange)",t:"Orange · intermédiaire"},Red:{c:"var(--lv-red)",t:"Red · confirmé"}};
+  var list=document.getElementById('spot-list');
+  if(!window.L){document.getElementById('spot-map').textContent='La carte n\'a pas pu se charger.';}
+  var map=window.L&&L.map('spot-map',{scrollWheelZoom:false});
+  if(map){
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'}).addTo(map);
+    map.on('focus',function(){map.scrollWheelZoom.enable()});map.on('blur',function(){map.scrollWheelZoom.disable()});
+  }
+  function el(tag,cls,txt){var e=document.createElement(tag);if(cls)e.className=cls;if(txt)e.textContent=txt;return e}
+  var items=[],markers=[];
+  function select(i,fromMap){
+    items.forEach(function(b,j){b.classList.toggle('on',j===i)});
+    if(fromMap){items[i].scrollIntoView({block:'nearest',behavior:'smooth'});return}
+    if(map){map.flyTo(SPOTS[i].ll,16,{duration:.6});markers[i].openPopup();}
+  }
+  SPOTS.forEach(function(s,i){
+    var lv=LV[s.l];
+    var li=el('li'),b=el('button','spot-item');b.type='button';b.style.setProperty('--l',lv.c);
+    b.appendChild(el('span','lvl',s.l));b.appendChild(el('b','',s.n));b.appendChild(el('span','',s.a));
+    b.addEventListener('click',function(){select(i)});
+    li.appendChild(b);list.appendChild(li);items.push(b);
+    if(!map)return;
+    var pop=el('div','pop'),tag=el('span','lvl',lv.t);tag.style.setProperty('--l',lv.c);
+    pop.appendChild(tag);pop.appendChild(el('h4','',s.n));pop.appendChild(el('p','addr',s.a));
+    if(s.d)pop.appendChild(el('p','',s.d));
+    var go=el('a','','Itinéraire →');go.href='https://www.google.com/maps/dir/?api=1&destination='+s.ll.join(',');go.target='_blank';go.rel='noopener';
+    pop.appendChild(el('p')).appendChild(go);
+    var icon=L.divIcon({className:'',html:'<div class="pin" style="--l:'+lv.c+'"></div>',iconSize:[22,22],iconAnchor:[11,24],popupAnchor:[0,-24]});
+    var m=L.marker(s.ll,{icon:icon,title:s.n,alt:s.n}).addTo(map).bindPopup(pop,{autoPanPaddingTopLeft:[50,20],autoPanPadding:[20,20]});
+    m.on('click',function(){select(i,true)});
+    markers.push(m);
+  });
+  if(map)map.fitBounds(L.latLngBounds(SPOTS.map(function(s){return s.ll})),{padding:[30,30]});
 })();
 </script>
 
