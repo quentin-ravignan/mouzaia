@@ -166,6 +166,21 @@ td.num.cy{color:var(--cyan)}
 .cream .empty p{color:var(--muted-ink)} .night .empty p{color:var(--muted)}
 .pill{align-self:flex-start;font-size:.8rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:999px;background:var(--e);color:var(--night)}
 
+/* shop */
+.shop{background:var(--yellow);color:var(--night)}
+.shop .eyebrow{color:var(--pink-deep)}.shop .lead{color:#3a2a10}
+.products{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.product{background:#fff;border:3px solid var(--ink);border-radius:20px;overflow:hidden;display:flex;flex-direction:column;box-shadow:6px 6px 0 var(--ink)}
+.product img{width:100%;height:auto;display:block;aspect-ratio:1;object-fit:cover;background:#ddd}
+.product .pbody{padding:16px 18px 18px;display:flex;flex-direction:column;gap:10px;flex:1}
+.product h3{font-family:var(--display);font-weight:400;font-size:1.35rem}
+.product p{color:var(--muted-ink);font-size:.95rem}
+.sizes{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto}
+.sizes button{font:inherit;font-weight:700;font-size:.85rem;padding:5px 10px;border-radius:999px;border:1.5px solid var(--ink);background:#fff;color:var(--ink);cursor:pointer}
+.sizes button[aria-pressed="true"]{background:var(--ink);color:var(--yellow)}
+.shop-note{margin-top:22px;font-weight:700;background:var(--night);color:var(--cream);border-radius:14px;padding:14px 18px}
+@media (max-width:860px){.products{grid-template-columns:1fr;max-width:420px;margin-inline:auto}}
+
 /* game */
 .game-wrap{position:relative;border-radius:22px;border:3px solid var(--ink);overflow:hidden;box-shadow:6px 6px 0 var(--pink-deep);background:var(--night);touch-action:manipulation;user-select:none;-webkit-user-select:none}
 .game-wrap canvas{display:block;width:100%;height:auto;cursor:pointer}
@@ -246,6 +261,7 @@ input[type=date]{color-scheme:dark}
       <li><a class="link" href="#inscription">Inscription</a></li>
       <li><a class="link" href="#spots">Spots</a></li>
       <li><a class="link" href="#riders">Riders</a></li>
+      <li><a class="link" href="#shop">Shop</a></li>
       <li><a class="link" href="#game">Game</a></li>
     </ul>
   </nav>
@@ -493,6 +509,34 @@ input[type=date]{color-scheme:dark}
     </div>
   </div>
 </section>
+<section id="shop" class="shop">
+  <div class="wrap">
+    <div class="head">
+      <p class="eyebrow">Shop</p>
+      <h2>Les t-shirts du crew</h2>
+      <p class="lead">Trois t-shirts noirs Roulettes, en tailles enfant et adulte.</p>
+    </div>
+    <div class="products">
+      <article class="product">
+        <img src="shop-logo.jpg" alt="T-shirt noir avec le logo Roulettes : le chat skateur dans le cercle néon" loading="lazy" width="900" height="900">
+        <div class="pbody"><h3>Le Logo</h3><p>Le chat skateur du club, en couleurs néon, sur fond noir.</p>
+          <div class="sizes" role="group" aria-label="Taille"><button type="button" aria-pressed="false">6 ans</button><button type="button" aria-pressed="false">8 ans</button><button type="button" aria-pressed="false">10 ans</button><button type="button" aria-pressed="false">12 ans</button><button type="button" aria-pressed="false">S</button><button type="button" aria-pressed="false">M</button><button type="button" aria-pressed="false">L</button><button type="button" aria-pressed="false">XL</button></div></div>
+      </article>
+      <article class="product">
+        <img src="shop-flames.jpg" alt="T-shirt noir avec ROULETTES en lettres jaunes entourées de flammes et PARIS 19E dessous" loading="lazy" width="900" height="900">
+        <div class="pbody"><h3>Flames</h3><p>ROULETTES en flammes jaunes et orange, façon magazine de skate des années 80.</p>
+          <div class="sizes" role="group" aria-label="Taille"><button type="button" aria-pressed="false">6 ans</button><button type="button" aria-pressed="false">8 ans</button><button type="button" aria-pressed="false">10 ans</button><button type="button" aria-pressed="false">12 ans</button><button type="button" aria-pressed="false">S</button><button type="button" aria-pressed="false">M</button><button type="button" aria-pressed="false">L</button><button type="button" aria-pressed="false">XL</button></div></div>
+      </article>
+      <article class="product">
+        <img src="shop-wheel.jpg" alt="T-shirt noir avec un grand emblème jaune en forme de roue de skate, barré d’un bandeau ROULETTES" loading="lazy" width="900" height="900">
+        <div class="pbody"><h3>Wheel</h3><p>Une roue de skate jaune géante et son bandeau ROULETTES, esprit hip-hop 90's.</p>
+          <div class="sizes" role="group" aria-label="Taille"><button type="button" aria-pressed="false">6 ans</button><button type="button" aria-pressed="false">8 ans</button><button type="button" aria-pressed="false">10 ans</button><button type="button" aria-pressed="false">12 ans</button><button type="button" aria-pressed="false">S</button><button type="button" aria-pressed="false">M</button><button type="button" aria-pressed="false">L</button><button type="button" aria-pressed="false">XL</button></div></div>
+      </article>
+    </div>
+    <p class="shop-note">Prix et commandes : bientôt ! En attendant, demande à Laurène pendant les cours.</p>
+  </div>
+</section>
+
 <section id="game" class="cream">
   <div class="wrap">
     <div class="head">
@@ -533,6 +577,9 @@ input[type=date]{color-scheme:dark}
   </div>
 </footer>
 
+<script>
+document.querySelectorAll('.sizes').forEach(function(g){g.addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;g.querySelectorAll('button').forEach(function(x){x.setAttribute('aria-pressed',x===b?'true':'false')})})});
+</script>
 <script>
 (function(){
   var links=[].slice.call(document.querySelectorAll('.nav a.link'));
