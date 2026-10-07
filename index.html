@@ -549,10 +549,7 @@ input[type=date]{color-scheme:dark}
     </div>
     <div class="online" id="game-online" hidden>
       <div class="online-setup">
-        <button type="button" class="game-char" id="net-host">Créer une partie</button>
-        <span class="muted-ink">ou</span>
-        <input id="net-code" inputmode="numeric" maxlength="4" placeholder="Code" aria-label="Code de la partie à rejoindre" autocomplete="off">
-        <button type="button" class="game-char" id="net-join">Rejoindre</button>
+        <button type="button" class="game-char" id="net-find">Trouver un·e adversaire</button>
       </div>
       <p><span id="net-msg" role="status"></span> <button type="button" class="game-char" id="net-quit">Quitter la partie</button></p>
     </div>
@@ -563,7 +560,7 @@ input[type=date]{color-scheme:dark}
       <button type="button" data-k="tre"><b>3-6 Flip</b><span><kbd>↓</kbd> <kbd>S</kbd> · +10</span></button>
     </div>
     <div class="game-bar">
-      <p>Saute le mobilier urbain (+1), prends les <b>tremplins</b> pour voler plus haut (+2), atterris sur les <b>rails</b> pour grinder et roule sur les <b>tables</b>. Un trick pas fini à l'atterrissage = <b>bail</b> ! À 2 sur le même écran : J1 avec <b>Z Q S D</b>, J2 avec les <b>flèches</b>. À 2 en ligne : chacun·e sur son téléphone ou son ordi, avec un code de partie. En duo, chaque chute coûte 5 points.</p>
+      <p>Saute le mobilier urbain (+1), prends les <b>tremplins</b> pour voler plus haut (+2), atterris sur les <b>rails</b> pour grinder et roule sur les <b>tables</b>. Un trick pas fini à l'atterrissage = <b>bail</b> ! À 2 sur le même écran : J1 avec <b>Z Q S D</b>, J2 avec les <b>flèches</b>. À 2 en ligne : chacun·e sur son téléphone ou son ordi, appuie sur « Trouver un·e adversaire » et vous êtes connecté·es directement. En duo, chaque chute coûte 5 points.</p>
       <p>Record : <b id="game-best">–</b> <button type="button" class="game-char" id="game-char">Changer de rider</button> <button type="button" class="game-char" id="game-mute" aria-pressed="false">🔊 Son</button></p>
     </div>
   </div>
@@ -811,27 +808,35 @@ document.querySelectorAll('.sizes').forEach(function(g){g.addEventListener('clic
 
   // ---- online duo: PeerJS only introduces the two devices, then they talk directly
   var NET={role:null,peer:null,conn:null,code:'',ready:[false,false],ev:[],timer:null,msg:''};
-  var onlinePanel=document.getElementById('game-online'),netMsgEl=document.getElementById('net-msg'),codeIn=document.getElementById('net-code');
+  var onlinePanel=document.getElementById('game-online'),netMsgEl=document.getElementById('net-msg');
   function me(){return MODE===3&&NET.role==='guest'?1:0}
   function netStatus(m){if(m!=null)NET.msg=m;netMsgEl.textContent=NET.msg}
   function loadPeer(cb){if(window.Peer)return cb();var sc=document.createElement('script');sc.src='https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js';sc.onload=cb;sc.onerror=function(){netStatus('Impossible de charger le mode en ligne. Vérifie ta connexion internet.')};document.head.appendChild(sc)}
-  function netClose(){if(NET.timer)clearInterval(NET.timer);var c=NET.conn,pr=NET.peer;NET.role=null;NET.peer=null;NET.conn=null;NET.code='';NET.ready=[false,false];NET.timer=null;NET.ev=[];
+  function netClose(){if(NET.timer)clearInterval(NET.timer);var c=NET.conn,pr=NET.peer;NET.role=null;NET.peer=null;NET.conn=null;NET.room=0;NET.ready=[false,false];NET.timer=null;NET.ev=[];
     try{c&&c.close()}catch(e){}try{pr&&pr.destroy()}catch(e){}onlinePanel.classList.remove('on')}
   function send(o){if(NET.conn&&NET.conn.open)try{NET.conn.send(o)}catch(e){}}
-  function host(){netClose();NET.role='host';netStatus('Création de la partie…');loadPeer(function(){
-    NET.code=String(Math.floor(1000+Math.random()*9000));var pr=NET.peer=new Peer('roulettes19-'+NET.code);
-    pr.on('open',function(){netStatus('Code de la partie : '+NET.code+' · donne-le à ton ami·e')});
-    pr.on('connection',function(c){if(NET.conn){c.close();return}setupConn(c)});
-    pr.on('error',function(e){if(e.type==='unavailable-id')host();else netStatus('Erreur de connexion ('+e.type+'). Réessaie.')})})}
-  function join(){var code=(codeIn.value||'').replace(/\D/g,'');if(code.length!==4){netStatus('Entre le code à 4 chiffres de ton ami·e.');return}
-    netClose();NET.role='guest';NET.code=code;netStatus('Connexion…');loadPeer(function(){var pr=NET.peer=new Peer();
-      pr.on('open',function(){setupConn(pr.connect('roulettes19-'+code,{reliable:true}))});
-      pr.on('error',function(e){netStatus(e.type==='peer-unavailable'?'Code introuvable. Vérifie-le avec ton ami·e.':'Erreur de connexion ('+e.type+'). Réessaie.')})})}
-  function setupConn(c){NET.conn=c;
-    c.on('open',function(){onlinePanel.classList.add('on');netStatus('Connecté·es ! Tu es '+(NET.role==='host'?'J1':'J2')+'. Choisis ton rider.');musicStop();state='select';NET.ready=[false,false];
-      if(NET.role==='host')NET.timer=setInterval(snap,33);else send({t:'pick',i:sel[1],r:false})});
-    c.on('data',onData);c.on('close',lost);c.on('error',lost)}
-  function lost(){if(!NET.conn)return;netClose();musicStop();state='select';reset();netStatus('Connexion perdue. Crée ou rejoins une nouvelle partie.')}
+  // 2 fixed online tables: join one where someone is waiting, otherwise wait at a free one
+  function RID(n){return 'roulettes19-table-'+n}
+  function dropPeer(){var pr=NET.peer;NET.peer=null;try{pr&&pr.destroy()}catch(e){}}
+  function tryJoin(n,ok,fail){dropPeer();NET.role='guest';var done=false,pr=NET.peer=new Peer();
+    var to=setTimeout(function(){end(false)},7000);
+    function end(v){if(done)return;done=true;clearTimeout(to);if(v)ok();else{dropPeer();fail()}}
+    pr.on('error',function(){end(false)});
+    pr.on('open',function(){var c=pr.connect(RID(n),{reliable:true}),joined=false;
+      c.on('data',function(d){if(!joined){if(d&&d.t==='welcome'){joined=true;NET.room=n;end(true);attach(c,false)}else if(d&&d.t==='busy')end(false);return}onData(d)});
+      c.on('error',function(){end(false)});c.on('close',function(){if(joined)lost();else end(false)})})}
+  function tryHost(n,ok,fail){dropPeer();NET.role='host';var opened=false,pr=NET.peer=new Peer(RID(n));
+    pr.on('open',function(){opened=true;NET.room=n;netStatus('En attente d\'un·e adversaire… (table '+n+')');ok()});
+    pr.on('connection',function(c){c.on('open',function(){if(NET.conn){c.send({t:'busy'});setTimeout(function(){c.close()},400);return}c.send({t:'welcome'});attach(c,true)})});
+    pr.on('error',function(e){if(!opened){dropPeer();fail()}else if(e.type!=='peer-unavailable')netStatus('Erreur de connexion ('+e.type+'). Réessaie.')})}
+  function wait(ms){return function(ok,fail){setTimeout(fail,ms)}}
+  function findGame(){netClose();netStatus('Recherche d\'une partie…');loadPeer(function(){
+    var steps=[function(o,f){tryJoin(1,o,f)},function(o,f){tryJoin(2,o,f)},function(o,f){tryHost(1,o,f)},wait(900),function(o,f){tryJoin(1,o,f)},function(o,f){tryHost(2,o,f)},function(o,f){tryJoin(2,o,f)}];
+    (function next(i){if(i>=steps.length){NET.role=null;netStatus('Les 2 parties en ligne sont déjà occupées. Réessaie dans un moment.');return}steps[i](function(){},function(){next(i+1)})})(0)})}
+  function attach(c,withData){NET.conn=c;if(withData)c.on('data',onData);c.on('close',lost);c.on('error',lost);
+    onlinePanel.classList.add('on');netStatus('Connecté·es ! Tu es '+(NET.role==='host'?'J1':'J2')+'. Choisis ton rider.');musicStop();state='select';NET.ready=[false,false];
+    if(NET.role==='host')NET.timer=setInterval(snap,33);else send({t:'pick',i:sel[1],r:false})}
+  function lost(){if(!NET.conn)return;netClose();musicStop();state='select';reset();netStatus('Connexion perdue. Appuie sur « Trouver un·e adversaire » pour rejouer.')}
   function onData(d){if(!d||!d.t)return;
     if(NET.role==='host'){
       if(d.t==='pick'){if(state!=='select')return;sel[1]=d.i;NET.ready[1]=!!d.r;if(sel[1]===sel[0])move(0,1);tryStart()}
@@ -852,9 +857,7 @@ document.querySelectorAll('.sizes').forEach(function(g){g.addEventListener('clic
     if(state==='select'&&was!=='select')netStatus('Connecté·es ! Tu es J2. Choisis ton rider.')
     if(state!=='run'&&was==='run'){musicStop();if(state==='win')confetti()}
     d.ev.forEach(function(e){if(e[0]==='sfx'){if(!muted)try{SFX[e[1]](e[2])}catch(x){}}else if(e[0]==='pop')pops.push({txt:e[2],x:PL[e[1]].x+40,y:e[3],life:1,col:e[4]})})}
-  document.getElementById('net-host').addEventListener('click',host);
-  document.getElementById('net-join').addEventListener('click',join);
-  codeIn.addEventListener('keydown',function(e){if(e.key==='Enter')join()});
+  document.getElementById('net-find').addEventListener('click',findGame);
   document.getElementById('net-quit').addEventListener('click',function(){netClose();musicStop();state='select';reset();netStatus('Partie quittée.')});
 
   // ---- input
@@ -882,7 +885,7 @@ document.querySelectorAll('.sizes').forEach(function(g){g.addEventListener('clic
     if(state!=='run'){if(GO[e.code])act(null,k);return}
     act(PL[who],k);
   });
-  function setMode(m){if(m===2&&PHONE)return;if(MODE===3&&m!==3)netClose();MODE=m;pickTurn=0;if(m>=2&&sel[1]===sel[0])sel[1]=(sel[0]+1)%CHARS.length;onlinePanel.hidden=m!==3;if(m===3&&!NET.conn)netStatus(NET.msg||'Crée une partie, ou entre le code de ton ami·e.')}
+  function setMode(m){if(m===2&&PHONE)return;if(MODE===3&&m!==3)netClose();MODE=m;pickTurn=0;if(m>=2&&sel[1]===sel[0])sel[1]=(sel[0]+1)%CHARS.length;onlinePanel.hidden=m!==3;if(m===3&&!NET.conn)netStatus(NET.msg||'Appuie sur « Trouver un·e adversaire » : tu rejoins directement quelqu\'un qui attend.')}
   function cpos(e){var r=cv.getBoundingClientRect();return{x:(e.clientX-r.left)*W/r.width,y:(e.clientY-r.top)*H/r.height}}
   function panelAt(p){for(var i=0;i<CHARS.length;i++){var k=card(i);if(p.x>k.x&&p.x<k.x+k.w&&p.y>k.y&&p.y<k.y+k.h)return i}return -1}
   var PHONE=matchMedia('(pointer:coarse)').matches&&!matchMedia('(pointer:fine)').matches;
@@ -1145,7 +1148,7 @@ document.querySelectorAll('.sizes').forEach(function(g){g.addEventListener('clic
       var r3=MODE===3&&NET.conn;if(MODE>=2&&p1)badge('J1'+(r3&&NET.ready[0]?' ✓':''),k.x+6,k.y+6,C.yellow);if(p2)badge('J2'+(r3&&NET.ready[1]?' ✓':''),k.x+6,k.y+(p1?28:6),C.cyan)});
     var cs=CHARS[sel[MODE===3?me():0]],info=cs.name+' · '+(cs.age?cs.age+' ans · '+cs.stance:cs.info);
     ctx.textAlign='center';ctx.fillStyle=C.cream;ctx.font='700 13px Space Grotesk, sans-serif';
-    if(MODE===3){var hint=!NET.conn?(NET.role==='host'&&NET.code?'Code : '+NET.code+' · en attente de ton ami·e…':'Crée ou rejoins une partie juste sous le jeu ↓'):(NET.ready[me()]?'Prêt·e ! En attente de l\'autre joueur…':(PHONE?'Touche ta carte':'Touche ta carte (ou ← → puis Espace)')+' · tu es J'+(me()+1));ctx.fillStyle=NET.conn?C.cream:C.yellow;ctx.font=(NET.conn?'700 12px Space Grotesk':'14px Bungee')+', sans-serif';ctx.fillText(hint,W/2,294);ctx.textAlign='left';return}
+    if(MODE===3){var hint=!NET.conn?(NET.role==='host'&&NET.room?'En attente d\'un·e adversaire…':'Appuie sur « Trouver un·e adversaire » sous le jeu ↓'):(NET.ready[me()]?'Prêt·e ! En attente de l\'autre joueur…':(PHONE?'Touche ta carte':'Touche ta carte (ou ← → puis Espace)')+' · tu es J'+(me()+1));ctx.fillStyle=NET.conn?C.cream:C.yellow;ctx.font=(NET.conn?'700 12px Space Grotesk':'14px Bungee')+', sans-serif';ctx.fillText(hint,W/2,294);ctx.textAlign='left';return}
     ctx.font='700 12px Space Grotesk, sans-serif';ctx.fillText(MODE===1?info+(PHONE?' · touche une carte pour jouer':' · ← → puis Espace, ou touche une carte'):(pickTurn===1?'J2 : touche ta carte':'J1 : Q / D · J2 : ← / → · Espace pour partir'),W/2,294);ctx.textAlign='left';
   }
   function drawPlayer(p,j){
