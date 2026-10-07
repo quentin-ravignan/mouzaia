@@ -186,6 +186,10 @@ td.num.cy{color:var(--cyan)}
 .game-wrap canvas{display:block;width:100%;height:auto;cursor:pointer}
 .game-wrap canvas:focus-visible{outline:3px solid var(--yellow);outline-offset:-3px}
 .game-bar{display:flex;flex-wrap:wrap;gap:12px 24px;justify-content:space-between;align-items:center;margin-top:16px;color:var(--muted-ink)}
+.modes{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.modes button{flex:1;min-width:0;font-family:var(--display);font-size:1rem;padding:12px 10px;border-radius:14px;border:2.5px solid var(--ink);background:#fff;color:var(--ink);cursor:pointer}
+.modes button[aria-pressed="true"]{background:var(--ink);color:var(--yellow)}
+.modes.phone .m-screen{display:none}
 .tricks{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:16px}
 .tricks button{font:inherit;cursor:pointer;background:var(--night);color:var(--cream);border:0;border-radius:14px;padding:12px 8px;display:flex;flex-direction:column;align-items:center;gap:4px;touch-action:manipulation;-webkit-user-select:none;user-select:none;border-bottom:4px solid var(--c,var(--cyan))}
 .tricks button:nth-child(2){--c:var(--pink)}.tricks button:nth-child(3){--c:var(--yellow)}.tricks button:nth-child(4){--c:#7aa8ff}
@@ -544,6 +548,11 @@ input[type=date]{color-scheme:dark}
       <h2>Skate Cat Run · 19e</h2>
       <p class="lead">Choisis ton rider, traverse le 19e de la Mouzaïa à la Villette et enchaîne les tricks. Premier objectif : <b>100 points</b> !</p>
     </div>
+    <div class="modes" id="game-modes" role="group" aria-label="Mode de jeu">
+      <button type="button" data-m="1" aria-pressed="true">Solo</button>
+      <button type="button" data-m="2" aria-pressed="false" class="m-screen">Duo écran</button>
+      <button type="button" data-m="3" aria-pressed="false">Duo en ligne</button>
+    </div>
     <div class="game-wrap">
       <canvas id="game-canvas" width="900" height="300" tabindex="0" aria-label="Mini-jeu de skate dans le 19e : choisis Léonie, Mona, Léo ou Achille, saute les obstacles et fais des tricks pour atteindre 100 points"></canvas>
     </div>
@@ -697,6 +706,7 @@ document.querySelectorAll('.sizes').forEach(function(g){g.addEventListener('clic
 <script>
 (function(){
   var cv=document.getElementById('game-canvas'),ctx=cv.getContext('2d'),bestEl=document.getElementById('game-best');
+  var PHONE=matchMedia('(hover:none) and (pointer:coarse)').matches||window.innerWidth<600;
   var H=300,W=cv.parentNode.clientWidth<640?560:900,GROUND=252,PX=W<900?50:110,GOAL=100,ZONE=2600;
   var dpr=Math.min(window.devicePixelRatio||1,2);cv.width=W*dpr;cv.height=H*dpr;cv.style.aspectRatio=W+'/'+H;ctx.scale(dpr,dpr);
   var C={night:'#150d2e',night2:'#1f1442',cyan:'#3ddcf0',pink:'#ff4fa8',yellow:'#ffe14d',cream:'#fbf4e6',sil:'#2a1858',sil2:'#33206a',win:'rgba(255,225,77,.45)'};
@@ -858,6 +868,8 @@ document.querySelectorAll('.sizes').forEach(function(g){g.addEventListener('clic
     if(state!=='run'&&was==='run'){musicStop();if(state==='win')confetti()}
     d.ev.forEach(function(e){if(e[0]==='sfx'){if(!muted)try{SFX[e[1]](e[2])}catch(x){}}else if(e[0]==='pop')pops.push({txt:e[2],x:PL[e[1]].x+40,y:e[3],life:1,col:e[4]})})}
   document.getElementById('net-find').addEventListener('click',findGame);
+  if(PHONE)document.getElementById('game-modes').classList.add('phone');
+  [].forEach.call(document.querySelectorAll('#game-modes button'),function(b){b.addEventListener('click',function(){setMode(+b.dataset.m)})});
   document.getElementById('net-quit').addEventListener('click',function(){netClose();musicStop();state='select';reset();netStatus('Partie quittée.')});
 
   // ---- input
@@ -885,10 +897,10 @@ document.querySelectorAll('.sizes').forEach(function(g){g.addEventListener('clic
     if(state!=='run'){if(GO[e.code])act(null,k);return}
     act(PL[who],k);
   });
-  function setMode(m){if(m===2&&PHONE)return;if(MODE===3&&m!==3)netClose();MODE=m;pickTurn=0;if(m>=2&&sel[1]===sel[0])sel[1]=(sel[0]+1)%CHARS.length;onlinePanel.hidden=m!==3;if(m===3&&!NET.conn)netStatus(NET.msg||'Appuie sur « Trouver un·e adversaire » : tu rejoins directement quelqu\'un qui attend.')}
+  function syncModes(){[].forEach.call(document.querySelectorAll('#game-modes button'),function(b){b.setAttribute('aria-pressed',+b.dataset.m===MODE?'true':'false')})}
+  function setMode(m){if(m===2&&PHONE)return;if(state!=='select'&&m!==MODE){musicStop();state='select';pickTurn=0}if(MODE===3&&m!==3)netClose();MODE=m;pickTurn=0;if(m>=2&&sel[1]===sel[0])sel[1]=(sel[0]+1)%CHARS.length;onlinePanel.hidden=m!==3;syncModes();if(m===3&&!NET.conn)netStatus(NET.msg||'Appuie sur « Trouver un·e adversaire » : tu rejoins directement quelqu\'un qui attend.')}
   function cpos(e){var r=cv.getBoundingClientRect();return{x:(e.clientX-r.left)*W/r.width,y:(e.clientY-r.top)*H/r.height}}
   function panelAt(p){for(var i=0;i<CHARS.length;i++){var k=card(i);if(p.x>k.x&&p.x<k.x+k.w&&p.y>k.y&&p.y<k.y+k.h)return i}return -1}
-  var PHONE=matchMedia('(pointer:coarse)').matches&&!matchMedia('(pointer:fine)').matches;
   var MODES=PHONE?[[1,'SOLO'],[3,'DUO EN LIGNE']]:[[1,'SOLO'],[2,'DUO ÉCRAN'],[3,'DUO EN LIGNE']];
   function pills(){var n=MODES.length,w=W<900?(n>2?160:170):(n>2?180:190),g=10,x0=W/2-(n*w+(n-1)*g)/2;return MODES.map(function(m,i){return{x:x0+i*(w+g),y:12,w:w,h:30,m:m[0],t:m[1]}})}
   cv.addEventListener('pointerdown',function(e){e.preventDefault();cv.focus({preventScroll:true});
